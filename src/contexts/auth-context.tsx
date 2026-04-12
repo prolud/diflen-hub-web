@@ -19,15 +19,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const fetchUserProfile = async (username: string) => {
+  const fetchUserProfile = async () => {
     try {
-      const response = await api.get(`/api/user/${username}`);
+      const response = await api.get('/api/user');
       if (response.status === 200) {
         setUser(response.data);
       }
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
-      logout();
+      // If unauthorized, logout
+      if ((error as any).response?.status === 401) {
+        logout();
+      }
     }
   };
 
@@ -36,7 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const username = localStorage.getItem('diflen-hub-username');
     
     if (token && username) {
-      fetchUserProfile(username).finally(() => setLoading(false));
+      // Set a minimal user object initially to allow UI to show username
+      setUser({ username } as UserProfile);
+      fetchUserProfile().finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
@@ -45,7 +50,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (token: string, username: string) => {
     localStorage.setItem('diflen-hub-token', token);
     localStorage.setItem('diflen-hub-username', username);
-    await fetchUserProfile(username);
+    
+    // Set minimal user object immediately
+    setUser({ username } as UserProfile);
+    
+    // Fetch full profile in background (not blocking)
+    fetchUserProfile();
+    
     router.push('/');
   };
 

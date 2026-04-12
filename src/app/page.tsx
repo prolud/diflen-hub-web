@@ -1,64 +1,97 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/axios';
+import { GetUnitiesResponse } from '@/types';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import Navbar from '@/components/layout/navbar';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { BookOpen, CheckCircle2 } from 'lucide-react';
+
+export default function HomePage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
+  const { data: unities, isLoading } = useQuery<GetUnitiesResponse[]>({
+    queryKey: ['unities'],
+    queryFn: async () => {
+      const response = await api.get('/api/unity');
+      return response.data;
+    },
+    enabled: !!user,
+  });
+
+  if (authLoading || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8 flex-1">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Treinamentos Disponíveis</h1>
+          <p className="text-muted-foreground">Escolha uma unidade para começar a aprender.</p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {unities?.map((unity) => (
+            <Card key={unity.name} className="overflow-hidden hover:shadow-lg transition-shadow border-2 hover:border-primary/50 group">
+              <div className="h-48 bg-muted relative">
+                {unity.unityCover ? (
+                  <img
+                    src={unity.unityCover}
+                    alt={unity.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
+                    <BookOpen className="w-12 h-12 text-primary/40" />
+                  </div>
+                )}
+                <div className="absolute top-2 right-2">
+                  {/* Progress or status badge if available */}
+                </div>
+              </div>
+              <CardHeader>
+                <CardTitle>{unity.name}</CardTitle>
+                <CardDescription className="line-clamp-2">
+                  {unity.description || 'Nenhuma descrição disponível.'}
+                </CardDescription>
+              </CardHeader>
+              <CardFooter className="flex justify-between items-center gap-4">
+                <Button asChild className="w-full group-hover:bg-primary transition-colors">
+                  <Link href={`/unity/${unity.name}`}>
+                    Ver Aulas
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        {unities?.length === 0 && (
+          <div className="text-center py-20 bg-card rounded-lg border-2 border-dashed">
+            <BookOpen className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Nenhuma unidade encontrada</h2>
+            <p className="text-muted-foreground">Novos conteúdos serão adicionados em breve.</p>
+          </div>
+        )}
       </main>
     </div>
   );

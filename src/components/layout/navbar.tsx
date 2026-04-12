@@ -1,0 +1,62 @@
+'use client';
+
+import Link from 'next/link';
+import { useAuth } from '@/contexts/auth-context';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { LogOut, User as UserIcon, BookOpen, Award } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+
+export default function Navbar() {
+  const { user, logout } = useAuth();
+
+  return (
+    <nav className="border-b bg-card text-card-foreground sticky top-0 z-50">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="text-xl font-bold tracking-tight text-primary">
+          Diflen Hub
+        </Link>
+
+        <div className="flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
+            <Link href="/" className="text-sm font-medium hover:text-primary flex items-center gap-1">
+              <BookOpen className="w-4 h-4" /> Unidades
+            </Link>
+            <Link href="/certificates" className="text-sm font-medium hover:text-primary flex items-center gap-1">
+              <Award className="w-4 h-4" /> Certificados
+            </Link>
+          </div>
+
+          {user && (
+            <div className="flex items-center gap-4 border-l pl-4">
+              {user.level !== undefined && (
+                <div className="hidden lg:flex flex-col items-end gap-1">
+                  <span className="text-xs font-semibold">Nível {user.level}</span>
+                  <Progress value={user.levelPercentage} className="w-24 h-2" />
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-bold leading-none">{user.username}</p>
+                  {user.experience !== undefined && (
+                    <p className="text-xs text-muted-foreground">{user.experience} XP</p>
+                  )}
+                </div>
+                <Avatar className="h-9 w-9 border-2 border-primary/20">
+                  <AvatarImage src={user.profilePic} />
+                  <AvatarFallback className="bg-primary/10 text-primary uppercase">
+                    {user.username.substring(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                <Button variant="ghost" size="icon" onClick={logout} title="Sair">
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
