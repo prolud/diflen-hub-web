@@ -158,7 +158,7 @@ export default function LessonPage() {
                     <CardContent className="p-6">
                       <RadioGroup 
                         onValueChange={(val) => handleAnswerSelect(question.publicId, val)}
-                        value={selectedAnswers[question.publicId]}
+                        value={selectedAnswers[question.publicId] || ""}
                         className="space-y-3"
                       >
                         {question.alternatives.map((alt) => (
