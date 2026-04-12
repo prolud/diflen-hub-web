@@ -70,7 +70,7 @@ export default function LessonPage() {
       });
       setAllAnswersStatus(newStatus);
 
-      if (data.wasAllQuestionsCorrectlyAnswered) {
+      if (data.wasAllLessonQuestionsCorrectlyAnswered) {
         queryClient.invalidateQueries({ queryKey: ['lesson', unityName, lessonName] });
         queryClient.invalidateQueries({ queryKey: ['lessons', unityName] });
         queryClient.invalidateQueries({ queryKey: ['unity', unityName] });
@@ -203,24 +203,29 @@ export default function LessonPage() {
                 })}
 
                 {verifyResult && (
-                  <Card className={`border-2 ${verifyResult.wasAllQuestionsCorrectlyAnswered ? 'bg-green-500/5 border-green-500/20' : 'bg-destructive/5 border-destructive/20'}`}>
+                  <Card className={`border-2 ${verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? 'bg-green-500/5 border-green-500/20' : 'bg-destructive/5 border-destructive/20'}`}>
                     <CardContent className="p-6 flex items-start gap-4">
-                      {verifyResult.wasAllQuestionsCorrectlyAnswered ? (
+                      {verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? (
                         <CheckCircle2 className="w-8 h-8 text-green-500 flex-shrink-0" />
                       ) : (
                         <AlertCircle className="w-8 h-8 text-destructive flex-shrink-0" />
                       )}
                       <div>
                         <h4 className="text-xl font-bold mb-1">
-                          {verifyResult.wasAllQuestionsCorrectlyAnswered ? 'Excelente!' : 'Ainda não foi dessa vez'}
+                          {verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? 'Excelente!' : 'Ainda não foi dessa vez'}
                         </h4>
                         <p className="text-muted-foreground">
-                          {verifyResult.message || (verifyResult.wasAllQuestionsCorrectlyAnswered ? 'Você acertou todas as questões!' : 'Algumas respostas estão incorretas. Tente novamente.')}
+                          {verifyResult.message || (verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? 'Você acertou todas as questões desta aula!' : 'Algumas respostas estão incorretas. Tente novamente.')}
                         </p>
                         {verifyResult.currentPointsWeight > 0 && (
                           <p className="mt-2 font-bold text-primary">+{verifyResult.currentPointsWeight} XP ganhos!</p>
                         )}
-                        {verifyResult.wasAllQuestionsCorrectlyAnswered && (
+                        {verifyResult.wasAllUnityQuestionsCorrectlyAnswered && (
+                          <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                            <p className="font-semibold text-primary">Parabéns! Você concluiu todas as lições desta unidade!</p>
+                          </div>
+                        )}
+                        {verifyResult.wasAllLessonQuestionsCorrectlyAnswered && (
                           <Button asChild className="mt-4" variant="outline">
                             <Link href={`/unity/${unityNameParam}`}>Voltar para Unidade</Link>
                           </Button>

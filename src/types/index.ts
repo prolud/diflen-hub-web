@@ -71,7 +71,8 @@ export interface AnswerVerifyOut {
 export interface VerifyAnswersResponse {
   answers: AnswerVerifyOut[];
   currentPointsWeight: number;
-  wasAllQuestionsCorrectlyAnswered: boolean;
+  wasAllUnityQuestionsCorrectlyAnswered: boolean;
+  wasAllLessonQuestionsCorrectlyAnswered: boolean;
   wasCertificateAlreadyIssued: boolean;
   message: string | null;
 }
