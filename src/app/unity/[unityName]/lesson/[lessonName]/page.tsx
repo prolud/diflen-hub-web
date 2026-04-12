@@ -27,6 +27,7 @@ export default function LessonPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState('video');
   const [verifyResult, setVerifyResult] = useState<VerifyAnswersResponse | null>(null);
+  const [allAnswersStatus, setAllAnswersStatus] = useState<Record<string, boolean>>({});
 
   const { data: lesson, isLoading: lessonLoading } = useQuery<LessonResponse>({
     queryKey: ['lesson', unityName, lessonName],
@@ -46,10 +47,13 @@ export default function LessonPage() {
 
   const verifyMutation = useMutation({
     mutationFn: async () => {
-      const answers = Object.entries(selectedAnswers).map(([qId, aId]) => ({
-        publicQuestionId: qId,
-        publicAlternativeId: aId,
-      }));
+      const answers = Object.entries(selectedAnswers)
+        .filter(([qId]) => !allAnswersStatus[qId])
+        .map(([qId, aId]) => ({
+          publicQuestionId: qId,
+          publicAlternativeId: aId,
+        }));
+        
       const response = await api.post('/api/questionnaire/verify-answers', {
         publicLessonId: lesson?.publicId,
         unityName,
@@ -59,6 +63,13 @@ export default function LessonPage() {
     },
     onSuccess: (data) => {
       setVerifyResult(data);
+      
+      const newStatus = { ...allAnswersStatus };
+      data.answers.forEach(a => {
+        newStatus[a.publicQuestionId] = a.isCorrect;
+      });
+      setAllAnswersStatus(newStatus);
+
       if (data.wasAllQuestionsCorrectlyAnswered) {
         queryClient.invalidateQueries({ queryKey: ['lesson', unityName, lessonName] });
         queryClient.invalidateQueries({ queryKey: ['lessons', unityName] });
@@ -68,6 +79,7 @@ export default function LessonPage() {
   });
 
   const handleAnswerSelect = (questionId: string, alternativeId: string) => {
+    if (allAnswersStatus[questionId]) return;
     setSelectedAnswers(prev => ({ ...prev, [questionId]: alternativeId }));
   };
 
@@ -153,36 +165,42 @@ export default function LessonPage() {
           <TabsContent value="quiz" className="space-y-6">
             {questions && questions.length > 0 ? (
               <div className="max-w-3xl mx-auto space-y-8 pb-12">
-                {questions.map((question, qIndex) => (
-                  <Card key={question.publicId} className={`border-2 overflow-hidden transition-all ${verifyResult?.answers.find(a => a.publicQuestionId === question.publicId)?.isCorrect === false ? 'border-destructive/30' : verifyResult?.answers.find(a => a.publicQuestionId === question.publicId)?.isCorrect === true ? 'border-green-500/30' : ''}`}>
-                    <CardHeader className="bg-muted/30">
-                      <CardTitle className="text-lg flex gap-3">
-                        <span className="text-primary opacity-50">{qIndex + 1}.</span>
-                        {question.statement}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                      <RadioGroup 
-                        onValueChange={(val) => handleAnswerSelect(question.publicId, val)}
-                        value={selectedAnswers[question.publicId] || ""}
-                        className="space-y-3"
-                      >
-                        {question.alternatives.map((alt) => (
-                          <div 
-                            key={alt.publicId} 
-                            className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors ${selectedAnswers[question.publicId] === alt.publicId ? 'border-primary bg-primary/5' : ''}`}
-                            onClick={() => handleAnswerSelect(question.publicId, alt.publicId)}
-                          >
-                            <RadioGroupItem value={alt.publicId} id={alt.publicId} />
-                            <Label htmlFor={alt.publicId} className="flex-1 cursor-pointer font-medium leading-relaxed">
-                              {alt.text}
-                            </Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </CardContent>
-                  </Card>
-                ))}
+                {questions.map((question, qIndex) => {
+                  const isCorrect = allAnswersStatus[question.publicId];
+                  const isWrong = verifyResult?.answers.find(a => a.publicQuestionId === question.publicId)?.isCorrect === false;
+                  
+                  return (
+                    <Card key={question.publicId} className={`border-2 overflow-hidden transition-all ${isWrong ? 'border-destructive/30' : isCorrect ? 'border-green-500/30' : ''}`}>
+                      <CardHeader className="bg-muted/30">
+                        <CardTitle className="text-lg flex gap-3">
+                          <span className="text-primary opacity-50">{qIndex + 1}.</span>
+                          {question.statement}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <RadioGroup 
+                          onValueChange={(val) => handleAnswerSelect(question.publicId, val)}
+                          value={selectedAnswers[question.publicId] || ""}
+                          className="space-y-3"
+                          disabled={isCorrect}
+                        >
+                          {question.alternatives.map((alt) => (
+                            <div 
+                              key={alt.publicId} 
+                              className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors ${selectedAnswers[question.publicId] === alt.publicId ? 'border-primary bg-primary/5' : ''} ${isCorrect ? 'opacity-80' : ''}`}
+                              onClick={() => handleAnswerSelect(question.publicId, alt.publicId)}
+                            >
+                              <RadioGroupItem value={alt.publicId} id={alt.publicId} disabled={isCorrect} />
+                              <Label htmlFor={alt.publicId} className="flex-1 cursor-pointer font-medium leading-relaxed">
+                                {alt.text}
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
 
                 {verifyResult && (
                   <Card className={`border-2 ${verifyResult.wasAllQuestionsCorrectlyAnswered ? 'bg-green-500/5 border-green-500/20' : 'bg-destructive/5 border-destructive/20'}`}>
@@ -217,7 +235,7 @@ export default function LessonPage() {
                     onClick={() => verifyMutation.mutate()} 
                     size="lg" 
                     className="w-full sm:w-64 h-14 text-lg rounded-xl shadow-xl shadow-primary/20"
-                    disabled={verifyMutation.isPending || Object.keys(selectedAnswers).length < questions.length}
+                    disabled={verifyMutation.isPending || Object.keys(selectedAnswers).filter(id => !allAnswersStatus[id]).length === 0}
                   >
                     {verifyMutation.isPending ? (
                       <>Validando <Loader2 className="w-5 h-5 ml-2 animate-spin" /></>
