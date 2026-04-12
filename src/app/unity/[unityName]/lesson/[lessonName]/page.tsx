@@ -16,7 +16,13 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 
 export default function LessonPage() {
-  const { unityName, lessonName } = useParams();
+  const params = useParams();
+  const unityNameParam = params.unityName as string;
+  const lessonNameParam = params.lessonName as string;
+  
+  const unityName = unityNameParam.replace(/-/g, ' ');
+  const lessonName = lessonNameParam.replace(/-/g, ' ');
+
   const queryClient = useQueryClient();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState('video');
@@ -87,7 +93,7 @@ export default function LessonPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-8 flex-1">
         <header className="mb-6">
-          <Link href={`/unity/${unityName}`} className="text-sm text-primary hover:underline flex items-center gap-1 mb-4">
+          <Link href={`/unity/${unityNameParam}`} className="text-sm text-primary hover:underline flex items-center gap-1 mb-4">
             ← Voltar para {unityName}
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -198,7 +204,7 @@ export default function LessonPage() {
                         )}
                         {verifyResult.wasAllQuestionsCorrectlyAnswered && (
                           <Button asChild className="mt-4" variant="outline">
-                            <Link href={`/unity/${unityName}`}>Voltar para Unidade</Link>
+                            <Link href={`/unity/${unityNameParam}`}>Voltar para Unidade</Link>
                           </Button>
                         )}
                       </div>

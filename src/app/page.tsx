@@ -76,7 +76,7 @@ export default function HomePage() {
               </CardHeader>
               <CardFooter className="flex justify-between items-center gap-4">
                 <Button asChild className="w-full group-hover:bg-primary transition-colors">
-                  <Link href={`/unity/${unity.name}`}>
+                  <Link href={`/unity/${unity.name.replace(/\s+/g, '-')}`}>
                     Ver Aulas
                   </Link>
                 </Button>

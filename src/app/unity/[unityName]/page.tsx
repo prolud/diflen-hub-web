@@ -14,7 +14,10 @@ import { useAuth } from '@/contexts/auth-context';
 import { useState } from 'react';
 
 export default function UnityPage() {
-  const { unityName } = useParams();
+  const params = useParams();
+  const unityNameParam = params.unityName as string;
+  const unityName = unityNameParam.replace(/-/g, ' ');
+  
   const { user } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -96,7 +99,7 @@ export default function UnityPage() {
             <Card key={lesson.title} className={`border-2 transition-all hover:border-primary/40 ${lesson.concluded ? 'bg-secondary/20 border-green-500/20' : ''}`}>
               <CardContent className="p-0">
                 <Link 
-                  href={`/unity/${unityName}/lesson/${lesson.title}`}
+                  href={`/unity/${unityNameParam}/lesson/${lesson.title.replace(/\s+/g, '-')}`}
                   className="flex items-center p-4 sm:p-6 gap-4 sm:gap-6 group"
                 >
                   <div className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl font-bold transition-colors ${lesson.concluded ? 'bg-green-500/20 text-green-500' : 'bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}`}>
