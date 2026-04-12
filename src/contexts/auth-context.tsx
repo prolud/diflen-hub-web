@@ -19,9 +19,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = async (username: string) => {
     try {
-      const response = await api.get('/api/user');
+      const response = await api.get(`/api/user/${username}`);
       if (response.status === 200) {
         setUser(response.data);
       }
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token && username) {
       // Set a minimal user object initially to allow UI to show username
       setUser({ username } as UserProfile);
-      fetchUserProfile().finally(() => setLoading(false));
+      fetchUserProfile(username).finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser({ username } as UserProfile);
     
     // Fetch full profile in background (not blocking)
-    fetchUserProfile();
+    fetchUserProfile(username);
     
     router.push('/');
   };
