@@ -218,7 +218,7 @@ export default function LessonPage() {
                           {verifyResult.message || (verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? 'Você acertou todas as questões desta aula!' : 'Algumas respostas estão incorretas. Tente novamente.')}
                         </p>
                         {verifyResult.currentPointsWeight > 0 && (
-                          <p className="mt-2 font-bold text-primary">+{verifyResult.currentPointsWeight} XP ganhos!</p>
+                          <p className="mt-2 font-bold text-primary">+{verifyResult.currentPointsWeight} XP</p>
                         )}
                         {verifyResult.wasAllUnityQuestionsCorrectlyAnswered && (
                           <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
