@@ -14,7 +14,6 @@ import Link from 'next/link';
 
 const registerSchema = z.object({
   username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres'),
-  email: z.string().email('Email inválido'),
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
 });
 
@@ -27,7 +26,6 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: '',
-      email: '',
       password: '',
     },
   });
@@ -68,19 +66,6 @@ export default function RegisterPage() {
                     <FormLabel>Nome de usuário</FormLabel>
                     <FormControl>
                       <Input placeholder="seu_nickname" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="seu@email.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

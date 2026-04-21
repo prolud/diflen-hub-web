@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
+  username: z.string().min(3, 'O nome de usuário deve ter pelo menos 3 caracteres'),
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
 });
 
@@ -27,7 +27,7 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      username: '',
       password: '',
     },
   });
@@ -57,7 +57,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">Diflen Hub</CardTitle>
           <CardDescription>
-            Entre com seu email e senha para acessar
+            Entre com seu usuário e senha para acessar
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -65,12 +65,12 @@ export default function LoginPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="email"
-                render={({ field }: { field: ControllerRenderProps<z.infer<typeof loginSchema>, 'email'> }) => (
+                name="username"
+                render={({ field }: { field: ControllerRenderProps<z.infer<typeof loginSchema>, 'username'> }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Usuário</FormLabel>
                     <FormControl>
-                      <Input placeholder="seu@email.com" {...field} />
+                      <Input placeholder="seu_usuário" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
