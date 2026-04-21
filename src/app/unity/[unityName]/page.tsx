@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/axios';
+import { encodeLessonName } from '@/lib/url-helpers';
 import { GetLessonsResponse, UnityResponse } from '@/types';
 import Navbar from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,12 @@ import { useState } from 'react';
 export default function UnityPage() {
   const params = useParams();
   const unityNameParam = params.unityName as string;
-  const unityName = unityNameParam.replace(/-/g, ' ');
+
+  // Keep encoded for API calls
+  const unityName = unityNameParam;
+
+  // Decode only for display
+  const unityNameDisplay = decodeURIComponent(unityNameParam);
   
   const { user } = useAuth();
   const router = useRouter();
@@ -70,7 +76,7 @@ export default function UnityPage() {
         <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
             <Link href="/" className="text-sm text-primary hover:underline">← Voltar para unidades</Link>
-            <h1 className="text-4xl font-extrabold tracking-tight">{unityName}</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight">{unityNameDisplay}</h1>
             <p className="text-muted-foreground text-lg max-w-2xl">
               {unityDetails?.description || 'Explore as aulas desta unidade e complete os desafios.'}
             </p>
@@ -98,8 +104,8 @@ export default function UnityPage() {
           {lessons?.map((lesson, index) => (
             <Card key={lesson.title} className={`border-2 transition-all hover:border-primary/40 ${lesson.concluded ? 'bg-secondary/20 border-green-500/20' : ''}`}>
               <CardContent className="p-0">
-                <Link 
-                  href={`/unity/${unityNameParam}/lesson/${lesson.title.replace(/\s+/g, '-')}`}
+                <Link
+                  href={`/unity/${unityNameParam}/lesson/${encodeLessonName(lesson.title)}`}
                   className="flex items-center p-4 sm:p-6 gap-4 sm:gap-6 group"
                 >
                   <div className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl font-bold transition-colors ${lesson.concluded ? 'bg-green-500/20 text-green-500' : 'bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}`}>

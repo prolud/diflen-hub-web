@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { GetUnitiesResponse } from '@/types';
+import { encodeUnitName } from '@/lib/url-helpers';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,7 @@ export default function HomePage() {
               </CardHeader>
               <CardFooter className="flex justify-between items-center gap-4">
                 <Button asChild className="w-full group-hover:bg-primary transition-colors">
-                  <Link href={`/unity/${unity.name.replace(/\s+/g, '-')}`}>
+                  <Link href={`/unity/${encodeUnitName(unity.name)}`}>
                     Ver Aulas
                   </Link>
                 </Button>

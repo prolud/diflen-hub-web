@@ -19,9 +19,14 @@ export default function LessonPage() {
   const params = useParams();
   const unityNameParam = params.unityName as string;
   const lessonNameParam = params.lessonName as string;
-  
-  const unityName = unityNameParam.replace(/-/g, ' ');
-  const lessonName = lessonNameParam.replace(/-/g, ' ');
+
+  // Keep encoded for API calls
+  const unityName = unityNameParam;
+  const lessonName = lessonNameParam;
+
+  // Decode only for display
+  const unityNameDisplay = decodeURIComponent(unityNameParam);
+  const lessonNameDisplay = decodeURIComponent(lessonNameParam);
 
   const queryClient = useQueryClient();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
@@ -106,7 +111,7 @@ export default function LessonPage() {
       <main className="container mx-auto px-4 py-8 flex-1">
         <header className="mb-6">
           <Link href={`/unity/${unityNameParam}`} className="text-sm text-primary hover:underline flex items-center gap-1 mb-4">
-            ← Voltar para {unityName}
+            ← Voltar para {unityNameDisplay}
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h1 className="text-3xl font-bold tracking-tight">{lesson?.title}</h1>
