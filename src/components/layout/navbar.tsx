@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User as UserIcon, BookOpen, Award } from 'lucide-react';
+import { LogOut, BookOpen, Award, Settings2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { UserRole } from '@/types';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -18,13 +19,18 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-8">
             <Link href="/" className="text-sm font-medium hover:text-primary flex items-center gap-1">
               <BookOpen className="w-4 h-4" /> Unidades
             </Link>
             <Link href="/certificates" className="text-sm font-medium hover:text-primary flex items-center gap-1">
               <Award className="w-4 h-4" /> Certificados
             </Link>
+            {user?.role === UserRole.Admin && (
+              <Link href="/settings" className="text-sm font-medium hover:text-primary flex items-center gap-1">
+                <Settings2 className="w-4 h-4" /> Configurações
+              </Link>
+            )}
           </div>
 
           {user && (

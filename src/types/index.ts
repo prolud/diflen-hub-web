@@ -1,3 +1,8 @@
+export enum UserRole {
+  User = 0,
+  Admin = 1,
+}
+
 export interface UserProfile {
   publicId: string;
   username: string;
@@ -6,6 +11,7 @@ export interface UserProfile {
   requiredExperienceToNextLevel: number;
   level: number;
   levelPercentage: number;
+  role: UserRole;
 }
 
 export interface LoginResponse {
