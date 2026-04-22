@@ -7,8 +7,12 @@ on:
 
 jobs:
   deploy:
-    runs-on: windows-latest
-    environment: production
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
     steps:
       - uses: actions/checkout@v3
 
@@ -24,24 +28,8 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
-      - name: Prepare deployment files
-        shell: pwsh
-        run: |
-          # Create publish directory
-          New-Item -ItemType Directory -Path ./publish -Force | Out-Null
-
-          # Copy build output
-          Copy-Item -Path ./.next -Destination ./publish/.next -Recurse
-          Copy-Item -Path ./public -Destination ./publish/public -Recurse -ErrorAction SilentlyContinue
-          Copy-Item -Path ./package.json -Destination ./publish/package.json
-          Copy-Item -Path ./package-lock.json -Destination ./publish/package-lock.json -ErrorAction SilentlyContinue
-          Copy-Item -Path ./node_modules -Destination ./publish/node_modules -Recurse
-
-      - name: Deploy to IIS
-        uses: ChristopheLav/iis-deploy@v1
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          msdeploy-service-url: https://${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PORT }}
-          website-name: ${{ secrets.SERVER_SITE }}
-          msdeploy-username: ${{ secrets.SERVER_LOGIN }}
-          msdeploy-password: ${{ secrets.SERVER_PASSWORD }}
-          source-path: ./publish
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
