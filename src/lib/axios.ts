@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://localhost:7034/',
+  baseURL: 'http://diflenhub-api.runasp.net/',
 });
 
 api.interceptors.request.use((config) => {
