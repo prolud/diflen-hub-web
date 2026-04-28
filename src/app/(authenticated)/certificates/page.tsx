@@ -5,8 +5,9 @@ import { certificatesApi } from '@/lib/api/certificates';
 import { queryKeys } from '@/lib/query-keys';
 import Navbar from '@/components/layout/navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Calendar, Download, Loader2 } from 'lucide-react';
+import { Award, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Link from 'next/link';
@@ -19,11 +20,7 @@ export default function CertificatesPage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="animate-spin h-12 w-12 text-primary" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

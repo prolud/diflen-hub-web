@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 
 /**
@@ -19,11 +19,7 @@ export default function AuthenticatedLayout({
   const { isReady } = useRequireAuth();
 
   if (!isReady) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="animate-spin h-12 w-12 text-primary" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return <>{children}</>;

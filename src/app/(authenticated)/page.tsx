@@ -3,12 +3,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { unitiesApi } from '@/lib/api/unities';
 import { queryKeys } from '@/lib/query-keys';
-import { encodeUnitName } from '@/lib/url-helpers';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Navbar from '@/components/layout/navbar';
-import { Loader2, BookOpen } from 'lucide-react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
+import { BookOpen } from 'lucide-react';
 
 export default function HomePage() {
   const { data: unities, isLoading } = useQuery({
@@ -17,11 +17,7 @@ export default function HomePage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="animate-spin h-12 w-12 text-primary" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -60,7 +56,7 @@ export default function HomePage() {
               </CardHeader>
               <CardFooter className="flex justify-between items-center gap-4">
                 <Button asChild className="w-full group-hover:bg-primary transition-colors">
-                  <Link href={`/unity/${encodeUnitName(unity.name)}`}>
+                  <Link href={`/unity/${encodeURIComponent(unity.name)}`}>
                     Ver Aulas
                   </Link>
                 </Button>

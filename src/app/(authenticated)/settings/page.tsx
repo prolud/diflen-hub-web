@@ -6,7 +6,8 @@ import { useRequireRole } from '@/hooks/use-require-auth';
 import Navbar from '@/components/layout/navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ListVideo, Loader2 } from 'lucide-react';
+import { ListVideo } from 'lucide-react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import ImportPlaylistModal from '@/components/settings/import-playlist-modal';
 
 export default function SettingsPage() {
@@ -14,11 +15,7 @@ export default function SettingsPage() {
   const [showImportModal, setShowImportModal] = useState(false);
 
   if (!isReady) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="animate-spin h-12 w-12 text-primary" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

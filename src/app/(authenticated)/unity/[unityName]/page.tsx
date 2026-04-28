@@ -7,12 +7,12 @@ import { lessonsApi } from '@/lib/api/lessons';
 import { certificatesApi } from '@/lib/api/certificates';
 import { getApiErrorMessage } from '@/lib/api/errors';
 import { queryKeys } from '@/lib/query-keys';
-import { encodeLessonName } from '@/lib/url-helpers';
 import Navbar from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, PlayCircle, Award, Loader2 } from 'lucide-react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -59,11 +59,7 @@ export default function UnityPage() {
   };
 
   if (unityLoading || lessonsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="animate-spin h-12 w-12 text-primary" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -102,7 +98,7 @@ export default function UnityPage() {
             <Card key={lesson.title} className={`border-2 transition-all hover:border-primary/40 ${lesson.concluded ? 'bg-secondary/20 border-green-500/20' : ''}`}>
               <CardContent className="p-0">
                 <Link
-                  href={`/unity/${unityNameParam}/lesson/${encodeLessonName(lesson.title)}`}
+                  href={`/unity/${unityNameParam}/lesson/${encodeURIComponent(lesson.title)}`}
                   className="flex items-center p-4 sm:p-6 gap-4 sm:gap-6 group"
                 >
                   <div className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl font-bold transition-colors ${lesson.concluded ? 'bg-green-500/20 text-green-500' : 'bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}`}>
