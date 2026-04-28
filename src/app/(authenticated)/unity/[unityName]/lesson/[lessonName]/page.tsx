@@ -2,11 +2,11 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { lessonsApi } from '@/lib/api/lessons';
 import { questionnaireApi } from '@/lib/api/questionnaire';
 import { queryKeys } from '@/lib/query-keys';
-import { VerifyAnswersResponse } from '@/types';
+import { Question, VerifyAnswersResponse } from '@/types';
 import Navbar from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,24 +18,81 @@ import Link from 'next/link';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 
+interface QuizState {
+  selectedAnswers: Record<string, string>;
+  allAnswersStatus: Record<string, boolean>;
+  verifyResult: VerifyAnswersResponse | null;
+}
+
+type QuizAction =
+  | { type: 'select'; questionId: string; alternativeId: string }
+  | { type: 'apply-result'; result: VerifyAnswersResponse };
+
+const initialQuizState: QuizState = {
+  selectedAnswers: {},
+  allAnswersStatus: {},
+  verifyResult: null,
+};
+
+/**
+ * Reducer do questionário.
+ *
+ * Concentra as três transições do quiz num só lugar para manter a sequência
+ * "responder → enviar → marcar correto" coerente. Respostas já marcadas como
+ * corretas (`allAnswersStatus[id] === true`) ficam imutáveis: novas seleções
+ * são ignoradas e elas não voltam a ser enviadas para verificação.
+ */
+function quizReducer(state: QuizState, action: QuizAction): QuizState {
+  switch (action.type) {
+    case 'select': {
+      if (state.allAnswersStatus[action.questionId]) return state;
+      return {
+        ...state,
+        selectedAnswers: {
+          ...state.selectedAnswers,
+          [action.questionId]: action.alternativeId,
+        },
+      };
+    }
+    case 'apply-result': {
+      const allAnswersStatus = { ...state.allAnswersStatus };
+      action.result.answers.forEach((a) => {
+        allAnswersStatus[a.publicQuestionId] = a.isCorrect;
+      });
+      return { ...state, verifyResult: action.result, allAnswersStatus };
+    }
+  }
+}
+
+/**
+ * Decide se todas as questões da lição já estão corretamente respondidas.
+ *
+ * A API só sinaliza conclusão da unidade inteira (`wasAllQuestionsCorrectlyAnswered`),
+ * então a conclusão da lição é derivada localmente: a lição está completa quando
+ * cada questão exibida tem `allAnswersStatus[id] === true`.
+ */
+function isLessonComplete(
+  questions: Question[] | undefined,
+  allAnswersStatus: Record<string, boolean>,
+): boolean {
+  if (!questions || questions.length === 0) return false;
+  return questions.every((q) => allAnswersStatus[q.publicId]);
+}
+
 export default function LessonPage() {
   const params = useParams();
   const unityNameParam = params.unityName as string;
   const lessonNameParam = params.lessonName as string;
 
-  // Keep encoded for API calls
   const unityName = unityNameParam;
   const lessonName = lessonNameParam;
 
-  // Decode only for display
   const unityNameDisplay = decodeURIComponent(unityNameParam);
-  const lessonNameDisplay = decodeURIComponent(lessonNameParam);
 
   const queryClient = useQueryClient();
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState('video');
-  const [verifyResult, setVerifyResult] = useState<VerifyAnswersResponse | null>(null);
-  const [allAnswersStatus, setAllAnswersStatus] = useState<Record<string, boolean>>({});
+  const [quiz, dispatch] = useReducer(quizReducer, initialQuizState);
+  const { selectedAnswers, allAnswersStatus, verifyResult } = quiz;
 
   const { data: lesson, isLoading: lessonLoading } = useQuery({
     queryKey: queryKeys.lessons.detail(unityName, lessonName),
@@ -63,15 +120,14 @@ export default function LessonPage() {
       });
     },
     onSuccess: (data) => {
-      setVerifyResult(data);
+      dispatch({ type: 'apply-result', result: data });
 
-      const newStatus = { ...allAnswersStatus };
-      data.answers.forEach(a => {
-        newStatus[a.publicQuestionId] = a.isCorrect;
+      const nextStatus = { ...allAnswersStatus };
+      data.answers.forEach((a) => {
+        nextStatus[a.publicQuestionId] = a.isCorrect;
       });
-      setAllAnswersStatus(newStatus);
 
-      if (data.wasAllLessonQuestionsCorrectlyAnswered) {
+      if (isLessonComplete(questions, nextStatus)) {
         queryClient.invalidateQueries({ queryKey: queryKeys.lessons.detail(unityName, lessonName) });
         queryClient.invalidateQueries({ queryKey: queryKeys.lessons.list(unityName) });
         queryClient.invalidateQueries({ queryKey: queryKeys.unities.detail(unityName) });
@@ -80,8 +136,7 @@ export default function LessonPage() {
   });
 
   const handleAnswerSelect = (questionId: string, alternativeId: string) => {
-    if (allAnswersStatus[questionId]) return;
-    setSelectedAnswers(prev => ({ ...prev, [questionId]: alternativeId }));
+    dispatch({ type: 'select', questionId, alternativeId });
   };
 
   const getYouTubeId = (url: string | null) => {
@@ -96,6 +151,7 @@ export default function LessonPage() {
   }
 
   const videoId = getYouTubeId(lesson?.videoUrl || null);
+  const lessonComplete = isLessonComplete(questions, allAnswersStatus);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -140,7 +196,7 @@ export default function LessonPage() {
                 </div>
               )}
             </div>
-            
+
             <Card className="border-2">
               <CardHeader>
                 <CardTitle>Sobre esta aula</CardTitle>
@@ -165,7 +221,7 @@ export default function LessonPage() {
                 {questions.map((question, qIndex) => {
                   const isCorrect = allAnswersStatus[question.publicId];
                   const isWrong = verifyResult?.answers.find(a => a.publicQuestionId === question.publicId)?.isCorrect === false;
-                  
+
                   return (
                     <Card key={question.publicId} className={`border-2 overflow-hidden transition-all ${isWrong ? 'border-destructive/30' : isCorrect ? 'border-green-500/30' : ''}`}>
                       <CardHeader className="bg-muted/30">
@@ -175,19 +231,19 @@ export default function LessonPage() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-6">
-                        <RadioGroup 
+                        <RadioGroup
                           onValueChange={(val) => handleAnswerSelect(question.publicId, val)}
-                          value={selectedAnswers[question.publicId] || ""}
+                          value={selectedAnswers[question.publicId] || ''}
                           className="space-y-3"
                           disabled={isCorrect}
                         >
                           {question.alternatives.map((alt) => (
-                            <div 
-                              key={alt.publicId} 
+                            <div
+                              key={alt.publicId}
                               className={`flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors ${selectedAnswers[question.publicId] === alt.publicId ? 'border-primary bg-primary/5' : ''} ${isCorrect ? 'opacity-80' : ''}`}
                               onClick={() => handleAnswerSelect(question.publicId, alt.publicId)}
                             >
-                              <RadioGroupItem value={alt.publicId} id={alt.publicId} disabled={isCorrect} />
+                              <RadioGroupItem value={alt.publicId} id={alt.publicId} />
                               <Label htmlFor={alt.publicId} className="flex-1 cursor-pointer font-medium leading-relaxed">
                                 {alt.text}
                               </Label>
@@ -200,29 +256,29 @@ export default function LessonPage() {
                 })}
 
                 {verifyResult && (
-                  <Card className={`border-2 ${verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? 'bg-green-500/5 border-green-500/20' : 'bg-destructive/5 border-destructive/20'}`}>
+                  <Card className={`border-2 ${lessonComplete ? 'bg-green-500/5 border-green-500/20' : 'bg-destructive/5 border-destructive/20'}`}>
                     <CardContent className="p-6 flex items-start gap-4">
-                      {verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? (
-                        <CheckCircle2 className="w-8 h-8 text-green-500 flex-shrink-0" />
+                      {lessonComplete ? (
+                        <CheckCircle2 className="w-8 h-8 text-green-500 shrink-0" />
                       ) : (
-                        <AlertCircle className="w-8 h-8 text-destructive flex-shrink-0" />
+                        <AlertCircle className="w-8 h-8 text-destructive shrink-0" />
                       )}
                       <div>
                         <h4 className="text-xl font-bold mb-1">
-                          {verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? 'Excelente!' : 'Ainda não foi dessa vez'}
+                          {lessonComplete ? 'Excelente!' : 'Ainda não foi dessa vez'}
                         </h4>
                         <p className="text-muted-foreground">
-                          {verifyResult.message || (verifyResult.wasAllLessonQuestionsCorrectlyAnswered ? 'Você acertou todas as questões desta aula!' : 'Algumas respostas estão incorretas. Tente novamente.')}
+                          {verifyResult.message || (lessonComplete ? 'Você acertou todas as questões desta aula!' : 'Algumas respostas estão incorretas. Tente novamente.')}
                         </p>
                         {verifyResult.currentPointsWeight > 0 && (
                           <p className="mt-2 font-bold text-primary">+{verifyResult.currentPointsWeight} XP</p>
                         )}
-                        {verifyResult.wasAllUnityQuestionsCorrectlyAnswered && (
+                        {verifyResult.wasAllQuestionsCorrectlyAnswered && (
                           <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
                             <p className="font-semibold text-primary">Parabéns! Você concluiu todas as lições desta unidade!</p>
                           </div>
                         )}
-                        {verifyResult.wasAllLessonQuestionsCorrectlyAnswered && (
+                        {lessonComplete && (
                           <Button asChild className="mt-4" variant="outline">
                             <Link href={`/unity/${unityNameParam}`}>Voltar para Unidade</Link>
                           </Button>
@@ -233,9 +289,9 @@ export default function LessonPage() {
                 )}
 
                 <div className="flex justify-center pt-4">
-                  <Button 
-                    onClick={() => verifyMutation.mutate()} 
-                    size="lg" 
+                  <Button
+                    onClick={() => verifyMutation.mutate()}
+                    size="lg"
                     className="w-full sm:w-64 h-14 text-lg rounded-xl shadow-xl shadow-primary/20"
                     disabled={verifyMutation.isPending || Object.keys(selectedAnswers).filter(id => !allAnswersStatus[id]).length === 0}
                   >

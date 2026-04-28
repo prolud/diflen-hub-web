@@ -87,7 +87,7 @@ export default function LoginPage() {
                         <Input type={showPassword ? 'text' : 'password'} placeholder="••••••" {...field} />
                         <button
                           type="button"
-                          onPointerDown={(e) => { e.preventDefault(); setShowPassword((prev) => !prev); }}
+                          onClick={() => setShowPassword((prev) => !prev)}
                           className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
                           tabIndex={-1}
                         >

@@ -73,8 +73,12 @@ export interface AnswerVerifyOut {
 export interface VerifyAnswersResponse {
   answers: AnswerVerifyOut[];
   currentPointsWeight: number;
-  wasAllUnityQuestionsCorrectlyAnswered: boolean;
-  wasAllLessonQuestionsCorrectlyAnswered: boolean;
+  /**
+   * Indica se todas as questões da **unidade inteira** estão corretamente
+   * respondidas (não apenas as desta lição). A flag de conclusão da lição
+   * é derivada no client a partir de `answers[].isCorrect`.
+   */
+  wasAllQuestionsCorrectlyAnswered: boolean;
   wasCertificateAlreadyIssued: boolean;
   message: string | null;
 }

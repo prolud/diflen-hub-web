@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Navbar from '@/components/layout/navbar';
 import { LoadingScreen } from '@/components/ui/loading-screen';
+import Image from 'next/image';
 import { BookOpen } from 'lucide-react';
 
 export default function HomePage() {
@@ -34,10 +35,12 @@ export default function HomePage() {
             <Card key={unity.name} variant="interactive" className="group">
               <div className="h-48 bg-muted relative">
                 {unity.unityCover ? (
-                  <img
+                  <Image
                     src={unity.unityCover}
                     alt={unity.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
