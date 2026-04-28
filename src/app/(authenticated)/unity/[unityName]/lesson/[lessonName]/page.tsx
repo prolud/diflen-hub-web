@@ -107,7 +107,7 @@ export default function LessonPage() {
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h1 className="text-3xl font-bold tracking-tight">{lesson?.title}</h1>
-            <Badge variant={lesson?.concluded ? "default" : "secondary"} className={lesson?.concluded ? "bg-green-500/10 text-green-500 border-green-500/20 px-4 py-1" : "px-4 py-1"}>
+            <Badge variant={lesson?.concluded ? 'success' : 'secondary'} className="px-4 py-1">
               {lesson?.concluded ? 'Concluída' : 'Em andamento'}
             </Badge>
           </div>

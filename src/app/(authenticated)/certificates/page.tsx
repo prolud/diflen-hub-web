@@ -34,7 +34,7 @@ export default function CertificatesPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {certificates?.map((cert) => (
-            <Card key={cert.unityName} className="border-2 hover:border-primary/50 transition-all group relative overflow-hidden">
+            <Card key={cert.unityName} variant="interactive" className="group relative">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
                 <Award className="w-24 h-24 text-primary" />
               </div>

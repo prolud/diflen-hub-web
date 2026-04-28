@@ -31,7 +31,7 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {unities?.map((unity) => (
-            <Card key={unity.name} className="overflow-hidden hover:shadow-lg transition-shadow border-2 hover:border-primary/50 group">
+            <Card key={unity.name} variant="interactive" className="group">
               <div className="h-48 bg-muted relative">
                 {unity.unityCover ? (
                   <img

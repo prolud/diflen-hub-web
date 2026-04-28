@@ -95,7 +95,11 @@ export default function UnityPage() {
         <div className="grid grid-cols-1 gap-4">
           <h2 className="text-2xl font-bold mb-4">Cronograma de Aulas</h2>
           {lessons?.map((lesson, index) => (
-            <Card key={lesson.title} className={`border-2 transition-all hover:border-primary/40 ${lesson.concluded ? 'bg-secondary/20 border-green-500/20' : ''}`}>
+            <Card
+              key={lesson.title}
+              variant="interactive"
+              className={lesson.concluded ? 'bg-secondary/20 border-green-500/20' : ''}
+            >
               <CardContent className="p-0">
                 <Link
                   href={`/unity/${unityNameParam}/lesson/${encodeURIComponent(lesson.title)}`}
@@ -110,7 +114,7 @@ export default function UnityPage() {
                       {lesson.title}
                     </h3>
                     <div className="flex items-center gap-3 mt-1">
-                      <Badge variant={lesson.concluded ? "default" : "secondary"} className={lesson.concluded ? "bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/10" : ""}>
+                      <Badge variant={lesson.concluded ? 'success' : 'secondary'}>
                         {lesson.concluded ? 'Concluída' : 'Pendente'}
                       </Badge>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
