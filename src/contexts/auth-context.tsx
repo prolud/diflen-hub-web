@@ -5,8 +5,13 @@ import { useRouter } from 'next/navigation';
 import { usersApi } from '@/lib/api/users';
 import { UserProfile } from '@/types';
 
+export interface AuthUser {
+  username: string;
+  profile: UserProfile | null;
+}
+
 interface AuthContextType {
-  user: UserProfile | null;
+  user: AuthUser | null;
   loading: boolean;
   login: (token: string, username: string) => Promise<void>;
   logout: () => void;
@@ -15,13 +20,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const fetchUserProfile = async (username: string) => {
     const profile = await usersApi.getProfile(username);
-    setUser(profile);
+    setUser({ username, profile });
   };
 
   useEffect(() => {
@@ -29,8 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const username = localStorage.getItem('diflen-hub-username');
 
     if (token && username) {
-      // Set a minimal user object initially to allow UI to show username
-      setUser({ username } as UserProfile);
+      setUser({ username, profile: null });
       fetchUserProfile(username).finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -41,10 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('diflen-hub-token', token);
     localStorage.setItem('diflen-hub-username', username);
 
-    // Set minimal user object immediately
-    setUser({ username } as UserProfile);
-
-    // Fetch full profile in background (not blocking)
+    setUser({ username, profile: null });
     fetchUserProfile(username);
 
     router.push('/');

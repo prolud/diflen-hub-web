@@ -1,5 +1,5 @@
 import api from '@/lib/axios';
-import { GetUnitiesResponse, UnityResponse } from '@/types';
+import { Unity, UnityDetail } from '@/types';
 
 export const unitiesApi = {
   /**
@@ -8,7 +8,7 @@ export const unitiesApi = {
    * @returns Array de unidades com nome, descrição e capa.
    */
   list: async () => {
-    const { data } = await api.get<GetUnitiesResponse[]>('/api/unity');
+    const { data } = await api.get<Unity[]>('/api/unity');
     return data;
   },
 
@@ -19,7 +19,7 @@ export const unitiesApi = {
    * @returns Detalhes da unidade, incluindo status do certificado.
    */
   getByName: async (unityName: string) => {
-    const { data } = await api.get<UnityResponse>(`/api/unity/${unityName}`);
+    const { data } = await api.get<UnityDetail>(`/api/unity/${unityName}`);
     return data;
   },
 

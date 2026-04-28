@@ -1,5 +1,5 @@
 import api from '@/lib/axios';
-import { GetLessonsResponse, LessonResponse } from '@/types';
+import { Lesson, LessonDetail } from '@/types';
 
 export const lessonsApi = {
   /**
@@ -9,7 +9,7 @@ export const lessonsApi = {
    * @returns Array de aulas com título e flag de conclusão.
    */
   listByUnity: async (unityName: string) => {
-    const { data } = await api.get<GetLessonsResponse[]>(
+    const { data } = await api.get<Lesson[]>(
       `/api/lesson/list/${unityName}`,
     );
     return data;
@@ -23,7 +23,7 @@ export const lessonsApi = {
    * @returns Detalhes da aula (título, descrição, vídeo e status).
    */
   getByName: async (unityName: string, lessonName: string) => {
-    const { data } = await api.get<LessonResponse>(
+    const { data } = await api.get<LessonDetail>(
       `/api/lesson/${unityName}/${lessonName}`,
     );
     return data;

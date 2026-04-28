@@ -26,7 +26,7 @@ export default function Navbar() {
             <Link href="/certificates" className="text-sm font-medium hover:text-primary flex items-center gap-1">
               <Award className="w-4 h-4" /> Certificados
             </Link>
-            {user?.role === UserRole.Admin && (
+            {user?.profile?.role === UserRole.Admin && (
               <Link href="/settings" className="text-sm font-medium hover:text-primary flex items-center gap-1">
                 <Settings2 className="w-4 h-4" /> Configurações
               </Link>
@@ -35,22 +35,22 @@ export default function Navbar() {
 
           {user && (
             <div className="flex items-center gap-4 border-l pl-4">
-              {user.level !== undefined && (
+              {user.profile && (
                 <div className="hidden lg:flex flex-col items-end gap-1">
-                  <span className="text-xs font-semibold">Nível {user.level}</span>
-                  <Progress value={user.levelPercentage} className="w-24 h-2" />
+                  <span className="text-xs font-semibold">Nível {user.profile.level}</span>
+                  <Progress value={user.profile.levelPercentage} className="w-24 h-2" />
                 </div>
               )}
-              
+
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-bold leading-none">{user.username}</p>
-                  {user.experience !== undefined && (
-                    <p className="text-xs text-muted-foreground">{user.experience} XP</p>
+                  {user.profile && (
+                    <p className="text-xs text-muted-foreground">{user.profile.experience} XP</p>
                   )}
                 </div>
                 <Avatar className="h-9 w-9 border-2 border-primary/20">
-                  <AvatarImage src={user.profilePic} />
+                  <AvatarImage src={user.profile?.profilePic} />
                   <AvatarFallback className="bg-primary/10 text-primary uppercase">
                     {user.username.substring(0, 2)}
                   </AvatarFallback>

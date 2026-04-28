@@ -21,31 +21,27 @@ export interface LoginResponse {
   message: string;
 }
 
-export interface UnityResponse {
-  publicId: string;
+export interface Unity {
   name: string;
   description: string | null;
+  unityCover?: string | null;
+}
+
+export interface UnityDetail extends Unity {
+  publicId: string;
   wasAllQuestionsCorrectlyAnswered: boolean;
   wasCertificateAlreadyIssued: boolean;
 }
 
-export interface GetUnitiesResponse {
-  name: string;
-  description: string | null;
-  unityCover: string | null;
+export interface Lesson {
+  title: string;
+  concluded: boolean;
 }
 
-export interface LessonResponse {
+export interface LessonDetail extends Lesson {
   publicId: string;
-  title: string;
   description: string | null;
   videoUrl: string | null;
-  concluded: boolean;
-}
-
-export interface GetLessonsResponse {
-  title: string;
-  concluded: boolean;
 }
 
 export interface Alternative {

@@ -30,10 +30,11 @@ export function useRequireAuth() {
  * Garante que a rota só seja exibida para usuários com a role informada.
  *
  * Sem usuário → redireciona para `/login`.
- * Usuário com role diferente → redireciona para `/`.
+ * Profile ainda carregando → aguarda (não decide ainda).
+ * Profile carregado com role diferente → redireciona para `/`.
  *
  * @param role - Role exigida para acessar a rota.
- * @returns `user`, `loading` e `isReady` (true quando há user com a role correta).
+ * @returns `user`, `loading` e `isReady` (true quando há profile carregado com a role correta).
  */
 export function useRequireRole(role: UserRole) {
   const { user, loading } = useAuth();
@@ -43,7 +44,9 @@ export function useRequireRole(role: UserRole) {
     if (loading) return;
     if (!user) {
       router.push('/login');
-    } else if (user.role !== role) {
+      return;
+    }
+    if (user.profile && user.profile.role !== role) {
       router.push('/');
     }
   }, [user, loading, role, router]);
@@ -51,6 +54,6 @@ export function useRequireRole(role: UserRole) {
   return {
     user,
     loading,
-    isReady: !loading && !!user && user.role === role,
+    isReady: !loading && !!user && user.profile?.role === role,
   };
 }
