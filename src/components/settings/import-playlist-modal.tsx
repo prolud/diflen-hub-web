@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/axios';
+import { unitiesApi } from '@/lib/api/unities';
+import { queryKeys } from '@/lib/query-keys';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -17,13 +18,9 @@ export default function ImportPlaylistModal({ onClose }: Props) {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (playlistUrl: string) => {
-      const encoded = encodeURIComponent(playlistUrl);
-      const response = await api.post(`/api/unity/import/${encoded}`);
-      return response.data;
-    },
+    mutationFn: unitiesApi.importPlaylist,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unities'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.unities.all });
       toast.success('Playlist importada com sucesso!');
       onClose();
     },

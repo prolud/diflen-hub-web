@@ -5,7 +5,7 @@ import { useForm, type ControllerRenderProps } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/contexts/auth-context';
-import api from '@/lib/axios';
+import { usersApi } from '@/lib/api/users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,9 +36,8 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.post('/api/user/login', values);
-      const { accessToken, isLogged, message, username } = response.data;
-      
+      const { accessToken, isLogged, message, username } = await usersApi.login(values);
+
       if (isLogged) {
         await login(accessToken, username);
       } else {

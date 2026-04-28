@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/axios';
-import { GetUnitiesResponse } from '@/types';
+import { unitiesApi } from '@/lib/api/unities';
+import { queryKeys } from '@/lib/query-keys';
 import { encodeUnitName } from '@/lib/url-helpers';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,12 +24,9 @@ export default function HomePage() {
     }
   }, [user, authLoading, router]);
 
-  const { data: unities, isLoading } = useQuery<GetUnitiesResponse[]>({
-    queryKey: ['unities'],
-    queryFn: async () => {
-      const response = await api.get('/api/unity');
-      return response.data;
-    },
+  const { data: unities, isLoading } = useQuery({
+    queryKey: queryKeys.unities.all,
+    queryFn: unitiesApi.list,
     enabled: !!user,
   });
 

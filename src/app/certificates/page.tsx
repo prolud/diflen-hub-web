@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/axios';
-import { CertificateResponse } from '@/types';
+import { certificatesApi } from '@/lib/api/certificates';
+import { queryKeys } from '@/lib/query-keys';
 import Navbar from '@/components/layout/navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, Calendar, Download, Loader2 } from 'lucide-react';
@@ -14,12 +14,9 @@ import { ptBR } from 'date-fns/locale';
 export default function CertificatesPage() {
   const { user } = useAuth();
 
-  const { data: certificates, isLoading } = useQuery<CertificateResponse[]>({
-    queryKey: ['certificates'],
-    queryFn: async () => {
-      const response = await api.get('/api/certificate');
-      return response.data;
-    },
+  const { data: certificates, isLoading } = useQuery({
+    queryKey: queryKeys.certificates.all,
+    queryFn: certificatesApi.list,
     enabled: !!user,
   });
 

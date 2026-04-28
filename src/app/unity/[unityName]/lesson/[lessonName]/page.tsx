@@ -3,8 +3,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import api from '@/lib/axios';
-import { LessonResponse, Question, VerifyAnswersResponse } from '@/types';
+import { lessonsApi } from '@/lib/api/lessons';
+import { questionnaireApi } from '@/lib/api/questionnaire';
+import { queryKeys } from '@/lib/query-keys';
+import { VerifyAnswersResponse } from '@/types';
 import Navbar from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,41 +36,34 @@ export default function LessonPage() {
   const [verifyResult, setVerifyResult] = useState<VerifyAnswersResponse | null>(null);
   const [allAnswersStatus, setAllAnswersStatus] = useState<Record<string, boolean>>({});
 
-  const { data: lesson, isLoading: lessonLoading } = useQuery<LessonResponse>({
-    queryKey: ['lesson', unityName, lessonName],
-    queryFn: async () => {
-      const response = await api.get(`/api/lesson/${unityName}/${lessonName}`);
-      return response.data;
-    },
+  const { data: lesson, isLoading: lessonLoading } = useQuery({
+    queryKey: queryKeys.lessons.detail(unityName, lessonName),
+    queryFn: () => lessonsApi.getByName(unityName, lessonName),
   });
 
-  const { data: questions, isLoading: questionsLoading } = useQuery<Question[]>({
-    queryKey: ['questions', unityName, lessonName],
-    queryFn: async () => {
-      const response = await api.get(`/api/questionnaire/${unityName}/${lessonName}`);
-      return response.data;
-    },
+  const { data: questions, isLoading: questionsLoading } = useQuery({
+    queryKey: queryKeys.questionnaire.byLesson(unityName, lessonName),
+    queryFn: () => questionnaireApi.getByLesson(unityName, lessonName),
   });
 
   const verifyMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: () => {
       const answers = Object.entries(selectedAnswers)
         .filter(([qId]) => !allAnswersStatus[qId])
         .map(([qId, aId]) => ({
           publicQuestionId: qId,
           publicAlternativeId: aId,
         }));
-        
-      const response = await api.post('/api/questionnaire/verify-answers', {
+
+      return questionnaireApi.verifyAnswers({
         publicLessonId: lesson?.publicId,
         unityName,
         answers,
       });
-      return response.data as VerifyAnswersResponse;
     },
     onSuccess: (data) => {
       setVerifyResult(data);
-      
+
       const newStatus = { ...allAnswersStatus };
       data.answers.forEach(a => {
         newStatus[a.publicQuestionId] = a.isCorrect;
@@ -76,9 +71,9 @@ export default function LessonPage() {
       setAllAnswersStatus(newStatus);
 
       if (data.wasAllLessonQuestionsCorrectlyAnswered) {
-        queryClient.invalidateQueries({ queryKey: ['lesson', unityName, lessonName] });
-        queryClient.invalidateQueries({ queryKey: ['lessons', unityName] });
-        queryClient.invalidateQueries({ queryKey: ['unity', unityName] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.lessons.detail(unityName, lessonName) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.lessons.list(unityName) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.unities.detail(unityName) });
       }
     },
   });

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/axios';
+import { usersApi } from '@/lib/api/users';
 import { UserProfile } from '@/types';
 
 interface AuthContextType {
@@ -21,13 +21,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserProfile = async (username: string) => {
     try {
-      const response = await api.get(`/api/user/${username}`);
-      if (response.status === 200) {
-        setUser(response.data);
-      }
+      const profile = await usersApi.getProfile(username);
+      setUser(profile);
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
-      // If unauthorized, logout
       if ((error as any).response?.status === 401) {
         logout();
       }

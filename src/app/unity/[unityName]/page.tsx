@@ -1,10 +1,12 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import api from '@/lib/axios';
+import { unitiesApi } from '@/lib/api/unities';
+import { lessonsApi } from '@/lib/api/lessons';
+import { certificatesApi } from '@/lib/api/certificates';
+import { queryKeys } from '@/lib/query-keys';
 import { encodeLessonName } from '@/lib/url-helpers';
-import { GetLessonsResponse, UnityResponse } from '@/types';
 import Navbar from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,30 +31,24 @@ export default function UnityPage() {
   const queryClient = useQueryClient();
   const [issuing, setIssuing] = useState(false);
 
-  const { data: unityDetails, isLoading: unityLoading } = useQuery<UnityResponse>({
-    queryKey: ['unity', unityName],
-    queryFn: async () => {
-      const response = await api.get(`/api/unity/${unityName}`);
-      return response.data;
-    },
+  const { data: unityDetails, isLoading: unityLoading } = useQuery({
+    queryKey: queryKeys.unities.detail(unityName),
+    queryFn: () => unitiesApi.getByName(unityName),
     enabled: !!unityName && !!user,
   });
 
-  const { data: lessons, isLoading: lessonsLoading } = useQuery<GetLessonsResponse[]>({
-    queryKey: ['lessons', unityName],
-    queryFn: async () => {
-      const response = await api.get(`/api/lesson/list/${unityName}`);
-      return response.data;
-    },
+  const { data: lessons, isLoading: lessonsLoading } = useQuery({
+    queryKey: queryKeys.lessons.list(unityName),
+    queryFn: () => lessonsApi.listByUnity(unityName),
     enabled: !!unityName && !!user,
   });
 
   const issueCertificate = async () => {
     setIssuing(true);
     try {
-      const response = await api.post(`/api/certificate/issue?unityName=${unityName}`);
+      await certificatesApi.issue(unityName);
       alert('Certificado emitido com sucesso!');
-      queryClient.invalidateQueries({ queryKey: ['unity', unityName] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.unities.detail(unityName) });
       router.push('/certificates');
     } catch (error: any) {
       alert(error.response?.data?.message || 'Falha ao emitir certificado. Verifique se concluiu todas as aulas e questionários.');
