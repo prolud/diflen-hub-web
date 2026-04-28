@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/contexts/auth-context';
 import { usersApi } from '@/lib/api/users';
+import { getApiErrorMessage } from '@/lib/api/errors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,8 +44,8 @@ export default function LoginPage() {
       } else {
         setError(message || 'Falha no login');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Ocorreu um erro ao fazer login');
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Ocorreu um erro ao fazer login'));
     } finally {
       setLoading(false);
     }

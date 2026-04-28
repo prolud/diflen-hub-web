@@ -5,28 +5,24 @@ import { useParams, useRouter } from 'next/navigation';
 import { unitiesApi } from '@/lib/api/unities';
 import { lessonsApi } from '@/lib/api/lessons';
 import { certificatesApi } from '@/lib/api/certificates';
+import { getApiErrorMessage } from '@/lib/api/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { encodeLessonName } from '@/lib/url-helpers';
 import Navbar from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, PlayCircle, Lock, Award, Loader2 } from 'lucide-react';
+import { CheckCircle2, PlayCircle, Award, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/auth-context';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function UnityPage() {
   const params = useParams();
   const unityNameParam = params.unityName as string;
-
-  // Keep encoded for API calls
   const unityName = unityNameParam;
-
-  // Decode only for display
   const unityNameDisplay = decodeURIComponent(unityNameParam);
-  
-  const { user } = useAuth();
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const [issuing, setIssuing] = useState(false);
@@ -34,24 +30,29 @@ export default function UnityPage() {
   const { data: unityDetails, isLoading: unityLoading } = useQuery({
     queryKey: queryKeys.unities.detail(unityName),
     queryFn: () => unitiesApi.getByName(unityName),
-    enabled: !!unityName && !!user,
+    enabled: !!unityName,
   });
 
   const { data: lessons, isLoading: lessonsLoading } = useQuery({
     queryKey: queryKeys.lessons.list(unityName),
     queryFn: () => lessonsApi.listByUnity(unityName),
-    enabled: !!unityName && !!user,
+    enabled: !!unityName,
   });
 
   const issueCertificate = async () => {
     setIssuing(true);
     try {
       await certificatesApi.issue(unityName);
-      alert('Certificado emitido com sucesso!');
+      toast.success('Certificado emitido com sucesso!');
       queryClient.invalidateQueries({ queryKey: queryKeys.unities.detail(unityName) });
       router.push('/certificates');
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Falha ao emitir certificado. Verifique se concluiu todas as aulas e questionários.');
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          'Falha ao emitir certificado. Verifique se concluiu todas as aulas e questionários.',
+        ),
+      );
     } finally {
       setIssuing(false);
     }

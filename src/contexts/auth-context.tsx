@@ -20,21 +20,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const fetchUserProfile = async (username: string) => {
-    try {
-      const profile = await usersApi.getProfile(username);
-      setUser(profile);
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      if ((error as any).response?.status === 401) {
-        logout();
-      }
-    }
+    const profile = await usersApi.getProfile(username);
+    setUser(profile);
   };
 
   useEffect(() => {
     const token = localStorage.getItem('diflen-hub-token');
     const username = localStorage.getItem('diflen-hub-username');
-    
+
     if (token && username) {
       // Set a minimal user object initially to allow UI to show username
       setUser({ username } as UserProfile);
@@ -47,13 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (token: string, username: string) => {
     localStorage.setItem('diflen-hub-token', token);
     localStorage.setItem('diflen-hub-username', username);
-    
+
     // Set minimal user object immediately
     setUser({ username } as UserProfile);
-    
+
     // Fetch full profile in background (not blocking)
     fetchUserProfile(username);
-    
+
     router.push('/');
   };
 

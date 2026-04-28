@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { usersApi } from '@/lib/api/users';
+import { getApiErrorMessage } from '@/lib/api/errors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,8 +37,8 @@ export default function RegisterPage() {
     try {
       await usersApi.register(values);
       router.push('/login');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Ocorreu um erro ao criar a conta');
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Ocorreu um erro ao criar a conta'));
     } finally {
       setLoading(false);
     }

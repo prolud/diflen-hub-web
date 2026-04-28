@@ -1,30 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { UserRole } from '@/types';
+import { useRequireRole } from '@/hooks/use-require-auth';
 import Navbar from '@/components/layout/navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ListVideo } from 'lucide-react';
+import { ListVideo, Loader2 } from 'lucide-react';
 import ImportPlaylistModal from '@/components/settings/import-playlist-modal';
 
 export default function SettingsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const { isReady } = useRequireRole(UserRole.Admin);
   const [showImportModal, setShowImportModal] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== UserRole.Admin)) {
-      router.push('/');
-    }
-  }, [user, authLoading, router]);
-
-  if (authLoading || !user || user.role !== UserRole.Admin) {
+  if (!isReady) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <Loader2 className="animate-spin h-12 w-12 text-primary" />
       </div>
     );
   }

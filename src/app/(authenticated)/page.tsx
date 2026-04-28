@@ -4,36 +4,22 @@ import { useQuery } from '@tanstack/react-query';
 import { unitiesApi } from '@/lib/api/unities';
 import { queryKeys } from '@/lib/query-keys';
 import { encodeUnitName } from '@/lib/url-helpers';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Navbar from '@/components/layout/navbar';
-import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { BookOpen, CheckCircle2 } from 'lucide-react';
+import { Loader2, BookOpen } from 'lucide-react';
 
 export default function HomePage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
-
   const { data: unities, isLoading } = useQuery({
     queryKey: queryKeys.unities.all,
     queryFn: unitiesApi.list,
-    enabled: !!user,
   });
 
-  if (authLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <Loader2 className="animate-spin h-12 w-12 text-primary" />
       </div>
     );
   }
