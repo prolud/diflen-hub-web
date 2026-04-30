@@ -2,30 +2,44 @@
 
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/axios';
+import { unitiesApi } from '@/lib/api/unities';
+import { queryKeys } from '@/lib/query-keys';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { X, ListVideo } from 'lucide-react';
+import { ListVideo } from 'lucide-react';
 
 interface Props {
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export default function ImportPlaylistModal({ onClose }: Props) {
+/**
+ * Modal de importação de playlists do YouTube.
+ *
+ * Usa o `Dialog` do shadcn/Radix, que já oferece focus trap, fechamento
+ * por `Esc`/clique no overlay e acessibilidade. O estado é controlado
+ * pelo parent via `open` / `onOpenChange`.
+ */
+export default function ImportPlaylistModal({ open, onOpenChange }: Props) {
   const [url, setUrl] = useState('');
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (playlistUrl: string) => {
-      const encoded = encodeURIComponent(playlistUrl);
-      const response = await api.post(`/api/unity/import/${encoded}`);
-      return response.data;
-    },
+    mutationFn: unitiesApi.importPlaylist,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unities'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.unities.all });
       toast.success('Playlist importada com sucesso!');
-      onClose();
+      setUrl('');
+      onOpenChange(false);
     },
     onError: () => {
       toast.error('Erro ao importar playlist. Verifique o link e tente novamente.');
@@ -39,23 +53,25 @@ export default function ImportPlaylistModal({ onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative bg-card border rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-        <div className="flex items-center justify-between mb-6">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
           <div className="flex items-center gap-2">
             <ListVideo className="w-5 h-5 text-red-500" />
-            <h2 className="text-lg font-semibold">Importar Playlist do YouTube</h2>
+            <DialogTitle>Importar Playlist do YouTube</DialogTitle>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          <DialogDescription>
+            Cole o link de uma playlist pública para criar uma nova unidade de treinamento.
+          </DialogDescription>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Link da playlist</label>
+            <label htmlFor="playlist-url" className="text-sm font-medium">
+              Link da playlist
+            </label>
             <Input
+              id="playlist-url"
               placeholder="https://www.youtube.com/playlist?list=..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
@@ -64,16 +80,21 @@ export default function ImportPlaylistModal({ onClose }: Props) {
             />
           </div>
 
-          <div className="flex gap-3 justify-end mt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
               Cancelar
             </Button>
             <Button type="submit" disabled={!url.trim() || isPending}>
               {isPending ? 'Importando...' : 'Importar'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

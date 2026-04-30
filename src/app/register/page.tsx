@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/axios';
+import { usersApi } from '@/lib/api/users';
+import { getApiErrorMessage } from '@/lib/api/errors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,13 +35,10 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.post('/api/user/register', values);
-      // Based on v1.json, /api/user/register returns a string (success message)
-      if (response.status === 201) {
-        router.push('/login');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Ocorreu um erro ao criar a conta');
+      await usersApi.register(values);
+      router.push('/login');
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Ocorreu um erro ao criar a conta'));
     } finally {
       setLoading(false);
     }

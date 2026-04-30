@@ -1,72 +1,65 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import api from '@/lib/axios';
-import { encodeLessonName } from '@/lib/url-helpers';
-import { GetLessonsResponse, UnityResponse } from '@/types';
+import { unitiesApi } from '@/lib/api/unities';
+import { lessonsApi } from '@/lib/api/lessons';
+import { certificatesApi } from '@/lib/api/certificates';
+import { getApiErrorMessage } from '@/lib/api/errors';
+import { queryKeys } from '@/lib/query-keys';
 import Navbar from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, PlayCircle, Lock, Award, Loader2 } from 'lucide-react';
+import { CheckCircle2, PlayCircle, Award, Loader2 } from 'lucide-react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/auth-context';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function UnityPage() {
   const params = useParams();
   const unityNameParam = params.unityName as string;
-
-  // Keep encoded for API calls
   const unityName = unityNameParam;
-
-  // Decode only for display
   const unityNameDisplay = decodeURIComponent(unityNameParam);
-  
-  const { user } = useAuth();
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const [issuing, setIssuing] = useState(false);
 
-  const { data: unityDetails, isLoading: unityLoading } = useQuery<UnityResponse>({
-    queryKey: ['unity', unityName],
-    queryFn: async () => {
-      const response = await api.get(`/api/unity/${unityName}`);
-      return response.data;
-    },
-    enabled: !!unityName && !!user,
+  const { data: unityDetails, isLoading: unityLoading } = useQuery({
+    queryKey: queryKeys.unities.detail(unityName),
+    queryFn: () => unitiesApi.getByName(unityName),
+    enabled: !!unityName,
   });
 
-  const { data: lessons, isLoading: lessonsLoading } = useQuery<GetLessonsResponse[]>({
-    queryKey: ['lessons', unityName],
-    queryFn: async () => {
-      const response = await api.get(`/api/lesson/list/${unityName}`);
-      return response.data;
-    },
-    enabled: !!unityName && !!user,
+  const { data: lessons, isLoading: lessonsLoading } = useQuery({
+    queryKey: queryKeys.lessons.list(unityName),
+    queryFn: () => lessonsApi.listByUnity(unityName),
+    enabled: !!unityName,
   });
 
   const issueCertificate = async () => {
     setIssuing(true);
     try {
-      const response = await api.post(`/api/certificate/issue?unityName=${unityName}`);
-      alert('Certificado emitido com sucesso!');
-      queryClient.invalidateQueries({ queryKey: ['unity', unityName] });
+      await certificatesApi.issue(unityName);
+      toast.success('Certificado emitido com sucesso!');
+      queryClient.invalidateQueries({ queryKey: queryKeys.unities.detail(unityName) });
       router.push('/certificates');
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Falha ao emitir certificado. Verifique se concluiu todas as aulas e questionários.');
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          'Falha ao emitir certificado. Verifique se concluiu todas as aulas e questionários.',
+        ),
+      );
     } finally {
       setIssuing(false);
     }
   };
 
   if (unityLoading || lessonsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="animate-spin h-12 w-12 text-primary" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -102,10 +95,14 @@ export default function UnityPage() {
         <div className="grid grid-cols-1 gap-4">
           <h2 className="text-2xl font-bold mb-4">Cronograma de Aulas</h2>
           {lessons?.map((lesson, index) => (
-            <Card key={lesson.title} className={`border-2 transition-all hover:border-primary/40 ${lesson.concluded ? 'bg-secondary/20 border-green-500/20' : ''}`}>
+            <Card
+              key={lesson.title}
+              variant="interactive"
+              className={lesson.concluded ? 'bg-secondary/20 border-green-500/20' : ''}
+            >
               <CardContent className="p-0">
                 <Link
-                  href={`/unity/${unityNameParam}/lesson/${encodeLessonName(lesson.title)}`}
+                  href={`/unity/${unityNameParam}/lesson/${encodeURIComponent(lesson.title)}`}
                   className="flex items-center p-4 sm:p-6 gap-4 sm:gap-6 group"
                 >
                   <div className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl font-bold transition-colors ${lesson.concluded ? 'bg-green-500/20 text-green-500' : 'bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}`}>
@@ -117,7 +114,7 @@ export default function UnityPage() {
                       {lesson.title}
                     </h3>
                     <div className="flex items-center gap-3 mt-1">
-                      <Badge variant={lesson.concluded ? "default" : "secondary"} className={lesson.concluded ? "bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/10" : ""}>
+                      <Badge variant={lesson.concluded ? 'success' : 'secondary'}>
                         {lesson.concluded ? 'Concluída' : 'Pendente'}
                       </Badge>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">

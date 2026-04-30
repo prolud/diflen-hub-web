@@ -1,32 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { UserRole } from '@/types';
+import { useRequireRole } from '@/hooks/use-require-auth';
 import Navbar from '@/components/layout/navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ListVideo } from 'lucide-react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import ImportPlaylistModal from '@/components/settings/import-playlist-modal';
 
 export default function SettingsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const { isReady } = useRequireRole(UserRole.Admin);
   const [showImportModal, setShowImportModal] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== UserRole.Admin)) {
-      router.push('/');
-    }
-  }, [user, authLoading, router]);
-
-  if (authLoading || !user || user.role !== UserRole.Admin) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+  if (!isReady) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -41,7 +30,7 @@ export default function SettingsPage() {
         <section>
           <h2 className="text-lg font-semibold mb-4">Importar conteúdo</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card className="border-2 hover:border-primary/50 transition-colors">
+            <Card variant="interactive">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <ListVideo className="w-5 h-5 text-red-500" />
@@ -61,7 +50,7 @@ export default function SettingsPage() {
         </section>
       </main>
 
-      {showImportModal && <ImportPlaylistModal onClose={() => setShowImportModal(false)} />}
+      <ImportPlaylistModal open={showImportModal} onOpenChange={setShowImportModal} />
     </div>
   );
 }

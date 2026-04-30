@@ -21,31 +21,27 @@ export interface LoginResponse {
   message: string;
 }
 
-export interface UnityResponse {
-  publicId: string;
+export interface Unity {
   name: string;
   description: string | null;
+  unityCover?: string | null;
+}
+
+export interface UnityDetail extends Unity {
+  publicId: string;
   wasAllQuestionsCorrectlyAnswered: boolean;
   wasCertificateAlreadyIssued: boolean;
 }
 
-export interface GetUnitiesResponse {
-  name: string;
-  description: string | null;
-  unityCover: string | null;
+export interface Lesson {
+  title: string;
+  concluded: boolean;
 }
 
-export interface LessonResponse {
+export interface LessonDetail extends Lesson {
   publicId: string;
-  title: string;
   description: string | null;
   videoUrl: string | null;
-  concluded: boolean;
-}
-
-export interface GetLessonsResponse {
-  title: string;
-  concluded: boolean;
 }
 
 export interface Alternative {
@@ -77,8 +73,12 @@ export interface AnswerVerifyOut {
 export interface VerifyAnswersResponse {
   answers: AnswerVerifyOut[];
   currentPointsWeight: number;
-  wasAllUnityQuestionsCorrectlyAnswered: boolean;
-  wasAllLessonQuestionsCorrectlyAnswered: boolean;
+  /**
+   * Indica se todas as questões da **unidade inteira** estão corretamente
+   * respondidas (não apenas as desta lição). A flag de conclusão da lição
+   * é derivada no client a partir de `answers[].isCorrect`.
+   */
+  wasAllQuestionsCorrectlyAnswered: boolean;
   wasCertificateAlreadyIssued: boolean;
   message: string | null;
 }

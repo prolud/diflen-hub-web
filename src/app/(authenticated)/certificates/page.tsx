@@ -1,34 +1,26 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/axios';
-import { CertificateResponse } from '@/types';
+import { certificatesApi } from '@/lib/api/certificates';
+import { queryKeys } from '@/lib/query-keys';
 import Navbar from '@/components/layout/navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Calendar, Download, Loader2 } from 'lucide-react';
+import { Award, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/auth-context';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function CertificatesPage() {
-  const { user } = useAuth();
-
-  const { data: certificates, isLoading } = useQuery<CertificateResponse[]>({
-    queryKey: ['certificates'],
-    queryFn: async () => {
-      const response = await api.get('/api/certificate');
-      return response.data;
-    },
-    enabled: !!user,
+  const { data: certificates, isLoading } = useQuery({
+    queryKey: queryKeys.certificates.all,
+    queryFn: certificatesApi.list,
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="animate-spin h-12 w-12 text-primary" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -42,8 +34,8 @@ export default function CertificatesPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {certificates?.map((cert) => (
-            <Card key={cert.unityName} className="border-2 hover:border-primary/50 transition-all group relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Card key={cert.unityName} variant="interactive" className="group relative">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
                 <Award className="w-24 h-24 text-primary" />
               </div>
               <CardHeader>
@@ -57,7 +49,11 @@ export default function CertificatesPage() {
                   <Calendar className="w-4 h-4" />
                   Concluído em: {format(new Date(cert.createdAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </div>
-                <Button className="w-full gap-2" variant="outline" onClick={() => alert('Download do PDF em desenvolvimento...')}>
+                <Button
+                  className="w-full gap-2"
+                  variant="outline"
+                  onClick={() => toast.info('Download do PDF em desenvolvimento...')}
+                >
                   <Download className="w-4 h-4" /> Baixar Certificado
                 </Button>
               </CardContent>
@@ -79,5 +75,3 @@ export default function CertificatesPage() {
     </div>
   );
 }
-
-import Link from 'next/link';

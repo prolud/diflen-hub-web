@@ -1,44 +1,24 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/axios';
-import { GetUnitiesResponse } from '@/types';
-import { encodeUnitName } from '@/lib/url-helpers';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { unitiesApi } from '@/lib/api/unities';
+import { queryKeys } from '@/lib/query-keys';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Navbar from '@/components/layout/navbar';
-import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { BookOpen, CheckCircle2 } from 'lucide-react';
+import { LoadingScreen } from '@/components/ui/loading-screen';
+import Image from 'next/image';
+import { BookOpen } from 'lucide-react';
 
 export default function HomePage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
-
-  const { data: unities, isLoading } = useQuery<GetUnitiesResponse[]>({
-    queryKey: ['unities'],
-    queryFn: async () => {
-      const response = await api.get('/api/unity');
-      return response.data;
-    },
-    enabled: !!user,
+  const { data: unities, isLoading } = useQuery({
+    queryKey: queryKeys.unities.all,
+    queryFn: unitiesApi.list,
   });
 
-  if (authLoading || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+  if (isLoading) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -52,13 +32,15 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {unities?.map((unity) => (
-            <Card key={unity.name} className="overflow-hidden hover:shadow-lg transition-shadow border-2 hover:border-primary/50 group">
+            <Card key={unity.name} variant="interactive" className="group">
               <div className="h-48 bg-muted relative">
                 {unity.unityCover ? (
-                  <img
+                  <Image
                     src={unity.unityCover}
                     alt={unity.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
@@ -77,7 +59,7 @@ export default function HomePage() {
               </CardHeader>
               <CardFooter className="flex justify-between items-center gap-4">
                 <Button asChild className="w-full group-hover:bg-primary transition-colors">
-                  <Link href={`/unity/${encodeUnitName(unity.name)}`}>
+                  <Link href={`/unity/${encodeURIComponent(unity.name)}`}>
                     Ver Aulas
                   </Link>
                 </Button>
