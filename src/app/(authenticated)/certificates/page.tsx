@@ -7,7 +7,7 @@ import Navbar from '@/components/layout/navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { LoadingScreen } from '@/components/ui/loading-screen';
+import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Link from 'next/link';
@@ -19,20 +19,34 @@ export default function CertificatesPage() {
     queryFn: certificatesApi.list,
   });
 
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <main className="container mx-auto px-4 py-8 flex-1">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Meus Certificados</h1>
-          <p className="text-muted-foreground">Aqui você encontra todas as suas conquistas no Diflen Hub.</p>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-9 w-56 mb-2" />
+              <Skeleton className="h-5 w-72" />
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold tracking-tight mb-2">Meus Certificados</h1>
+              <p className="text-muted-foreground">Aqui você encontra todas as suas conquistas no Diflen Hub.</p>
+            </>
+          )}
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {isLoading &&
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-xl border bg-card p-6 space-y-4">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ))}
+
           {certificates?.map((cert) => (
             <Card key={cert.unityName} variant="interactive" className="group relative">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">

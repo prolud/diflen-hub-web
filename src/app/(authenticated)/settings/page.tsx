@@ -7,7 +7,7 @@ import Navbar from '@/components/layout/navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ListVideo } from 'lucide-react';
-import { LoadingScreen } from '@/components/ui/loading-screen';
+import { Skeleton } from '@/components/ui/skeleton';
 import ImportPlaylistModal from '@/components/settings/import-playlist-modal';
 
 export default function SettingsPage() {
@@ -15,7 +15,29 @@ export default function SettingsPage() {
   const [showImportModal, setShowImportModal] = useState(false);
 
   if (!isReady) {
-    return <LoadingScreen />;
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <div className="h-16 border-b px-4 flex items-center gap-4">
+          <Skeleton className="h-8 w-32" />
+          <div className="ml-auto flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-8 w-24" />
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-8 space-y-6">
+          <Skeleton className="h-9 w-72 mb-2" />
+          <Skeleton className="h-5 w-56" />
+          <div className="pt-4 space-y-4">
+            <Skeleton className="h-6 w-36" />
+            <div className="rounded-xl border bg-card p-6 space-y-4 max-w-sm">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

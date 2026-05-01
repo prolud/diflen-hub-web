@@ -25,8 +25,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const fetchUserProfile = async (username: string) => {
-    const profile = await usersApi.getProfile(username);
-    setUser({ username, profile });
+    try {
+      const profile = await usersApi.getProfile(username);
+      setUser({ username, profile });
+    } catch {
+      setUser({ username, profile: null });
+    }
   };
 
   useEffect(() => {
@@ -46,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('diflen-hub-username', username);
 
     setUser({ username, profile: null });
-    fetchUserProfile(username);
+    fetchUserProfile(username).catch(() => {});
 
     router.push('/');
   };
