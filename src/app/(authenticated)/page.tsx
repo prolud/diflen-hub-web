@@ -7,7 +7,7 @@ import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/comp
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Navbar from '@/components/layout/navbar';
-import { LoadingScreen } from '@/components/ui/loading-screen';
+import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { BookOpen } from 'lucide-react';
 
@@ -17,20 +17,40 @@ export default function HomePage() {
     queryFn: unitiesApi.list,
   });
 
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <main className="container mx-auto px-4 py-8 flex-1">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Treinamentos Disponíveis</h1>
-          <p className="text-muted-foreground">Escolha uma unidade para começar a aprender.</p>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-9 w-72 mb-2" />
+              <Skeleton className="h-5 w-56" />
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold tracking-tight mb-2">Treinamentos Disponíveis</h1>
+              <p className="text-muted-foreground">Escolha uma unidade para começar a aprender.</p>
+            </>
+          )}
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {isLoading &&
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-xl border bg-card overflow-hidden">
+                <Skeleton className="h-48 w-full rounded-none" />
+                <div className="p-6 space-y-3">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+                <div className="px-6 pb-6">
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </div>
+            ))}
+
           {unities?.map((unity) => (
             <Card key={unity.name} variant="interactive" className="group">
               <div className="h-48 bg-muted relative">

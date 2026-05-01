@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle2, PlayCircle, ClipboardList, Send, Loader2, AlertCircle } from 'lucide-react';
-import { LoadingScreen } from '@/components/ui/loading-screen';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -146,9 +146,7 @@ export default function LessonPage() {
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  if (lessonLoading || questionsLoading) {
-    return <LoadingScreen />;
-  }
+  const isLoading = lessonLoading || questionsLoading;
 
   const videoId = getYouTubeId(lesson?.videoUrl || null);
   const lessonComplete = isLessonComplete(questions, allAnswersStatus);
@@ -158,18 +156,43 @@ export default function LessonPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-8 flex-1">
         <header className="mb-6">
-          <Link href={`/unity/${unityNameParam}`} className="text-sm text-primary hover:underline flex items-center gap-1 mb-4">
-            ← Voltar para {unityNameDisplay}
-          </Link>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h1 className="text-3xl font-bold tracking-tight">{lesson?.title}</h1>
-            <Badge variant={lesson?.concluded ? 'success' : 'secondary'} className="px-4 py-1">
-              {lesson?.concluded ? 'Concluída' : 'Em andamento'}
-            </Badge>
-          </div>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-4 w-40 mb-4" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <Skeleton className="h-9 w-80" />
+                <Skeleton className="h-7 w-28" />
+              </div>
+            </>
+          ) : (
+            <>
+              <Link href={`/unity/${unityNameParam}`} className="text-sm text-primary hover:underline flex items-center gap-1 mb-4">
+                ← Voltar para {unityNameDisplay}
+              </Link>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h1 className="text-3xl font-bold tracking-tight">{lesson?.title}</h1>
+                <Badge variant={lesson?.concluded ? 'success' : 'secondary'} className="px-4 py-1">
+                  {lesson?.concluded ? 'Concluída' : 'Em andamento'}
+                </Badge>
+              </div>
+            </>
+          )}
         </header>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        {isLoading ? (
+          <div className="space-y-6">
+            <Skeleton className="h-12 w-full max-w-md" />
+            <Skeleton className="aspect-video w-full rounded-2xl" />
+            <div className="rounded-xl border bg-card p-6 space-y-3">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </div>
+        ) : null}
+
+        {!isLoading && <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-2 h-12 bg-muted/50 p-1 border">
             <TabsTrigger value="video" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <PlayCircle className="w-4 h-4 mr-2" /> Aula em Vídeo
@@ -273,7 +296,7 @@ export default function LessonPage() {
                         {verifyResult.currentPointsWeight > 0 && (
                           <p className="mt-2 font-bold text-primary">+{verifyResult.currentPointsWeight} XP</p>
                         )}
-                        {verifyResult.wasAllQuestionsCorrectlyAnswered && (
+                        {verifyResult.wasUnityCorrectlyAnswered && (
                           <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
                             <p className="font-semibold text-primary">Parabéns! Você concluiu todas as lições desta unidade!</p>
                           </div>
@@ -311,7 +334,7 @@ export default function LessonPage() {
               </div>
             )}
           </TabsContent>
-        </Tabs>
+        </Tabs>}
       </main>
     </div>
   );

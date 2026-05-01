@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, PlayCircle, Award, Loader2 } from 'lucide-react';
-import { LoadingScreen } from '@/components/ui/loading-screen';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -58,9 +58,7 @@ export default function UnityPage() {
     }
   };
 
-  if (unityLoading || lessonsLoading) {
-    return <LoadingScreen />;
-  }
+  const isLoading = unityLoading || lessonsLoading;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -68,11 +66,21 @@ export default function UnityPage() {
       <main className="container mx-auto px-4 py-8 flex-1">
         <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
-            <Link href="/" className="text-sm text-primary hover:underline">← Voltar para unidades</Link>
-            <h1 className="text-4xl font-extrabold tracking-tight">{unityNameDisplay}</h1>
-            <p className="text-muted-foreground text-lg max-w-2xl">
-              {unityDetails?.description || 'Explore as aulas desta unidade e complete os desafios.'}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-10 w-72" />
+                <Skeleton className="h-5 w-96" />
+              </>
+            ) : (
+              <>
+                <Link href="/" className="text-sm text-primary hover:underline">← Voltar para unidades</Link>
+                <h1 className="text-4xl font-extrabold tracking-tight">{unityNameDisplay}</h1>
+                <p className="text-muted-foreground text-lg max-w-2xl">
+                  {unityDetails?.description || 'Explore as aulas desta unidade e complete os desafios.'}
+                </p>
+              </>
+            )}
           </div>
           
           {unityDetails?.wasAllQuestionsCorrectlyAnswered && (
@@ -93,7 +101,22 @@ export default function UnityPage() {
         </header>
 
         <div className="grid grid-cols-1 gap-4">
-          <h2 className="text-2xl font-bold mb-4">Cronograma de Aulas</h2>
+          {isLoading ? (
+            <Skeleton className="h-8 w-48 mb-4" />
+          ) : (
+            <h2 className="text-2xl font-bold mb-4">Cronograma de Aulas</h2>
+          )}
+          {isLoading &&
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="rounded-xl border bg-card p-4 sm:p-6 flex items-center gap-4 sm:gap-6">
+                <Skeleton className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="flex-shrink-0 w-10 h-10 rounded-full" />
+              </div>
+            ))}
           {lessons?.map((lesson, index) => (
             <Card
               key={lesson.title}
