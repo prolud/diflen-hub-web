@@ -78,7 +78,8 @@ export interface VerifyAnswersResponse {
    * respondidas (não apenas as desta lição). A flag de conclusão da lição
    * é derivada no client a partir de `answers[].isCorrect`.
    */
-  wasAllQuestionsCorrectlyAnswered: boolean;
+  wasUnityCorrectlyAnswered: boolean;
+  WasLessonCorrectlyAnswered: boolean;
   wasCertificateAlreadyIssued: boolean;
   message: string | null;
 }

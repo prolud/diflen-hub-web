@@ -273,7 +273,7 @@ export default function LessonPage() {
                         {verifyResult.currentPointsWeight > 0 && (
                           <p className="mt-2 font-bold text-primary">+{verifyResult.currentPointsWeight} XP</p>
                         )}
-                        {verifyResult.wasAllQuestionsCorrectlyAnswered && (
+                        {verifyResult.wasUnityCorrectlyAnswered && (
                           <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
                             <p className="font-semibold text-primary">Parabéns! Você concluiu todas as lições desta unidade!</p>
                           </div>
