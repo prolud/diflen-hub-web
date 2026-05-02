@@ -246,7 +246,7 @@ export default function LessonPage() {
                   const isWrong = verifyResult?.answers.find(a => a.publicQuestionId === question.publicId)?.isCorrect === false;
 
                   return (
-                    <Card key={question.publicId} className={`overflow-hidden transition-all ${isWrong ? 'border-destructive/30' : isCorrect ? 'border-green-500/30' : ''}`}>
+                    <Card key={question.publicId} className={`border-2 overflow-hidden transition-all ${isWrong ? 'border-destructive/30' : isCorrect ? 'border-green-500/30' : ''}`}>
                       <CardHeader className="bg-muted/30">
                         <CardTitle className="text-lg flex gap-3">
                           <span className="text-primary opacity-50">{qIndex + 1}.</span>

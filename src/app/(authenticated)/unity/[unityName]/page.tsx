@@ -83,7 +83,7 @@ export default function UnityPage() {
             )}
           </div>
 
-          {unityDetails?.wasAllQuestionsCorrectlyAnswered && (
+          {unityDetails?.wasUnityCorrectlyAnswered && (
             <div className="bg-primary/10 border border-primary/20 p-6 rounded-2xl flex flex-col items-center gap-3">
               <Award className="w-12 h-12 text-primary" />
               <div className="text-center">
