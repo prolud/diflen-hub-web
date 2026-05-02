@@ -38,17 +38,17 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading &&
             Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-xl border bg-card overflow-hidden">
+              <Card key={i} variant="interactive" className="group">
                 <Skeleton className="h-48 w-full rounded-none" />
-                <div className="p-6 space-y-3">
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-                </div>
-                <div className="px-6 pb-6">
+                <CardHeader>
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                </CardHeader>
+                <CardFooter>
                   <Skeleton className="h-10 w-full" />
-                </div>
-              </div>
+                </CardFooter>
+              </Card>
             ))}
 
           {unities?.map((unity) => (
@@ -63,7 +63,7 @@ export default function HomePage() {
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
+                  <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-secondary/20">
                     <BookOpen className="w-12 h-12 text-primary/40" />
                   </div>
                 )}

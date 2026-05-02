@@ -82,14 +82,14 @@ export default function UnityPage() {
               </>
             )}
           </div>
-          
+
           {unityDetails?.wasAllQuestionsCorrectlyAnswered && (
             <div className="bg-primary/10 border border-primary/20 p-6 rounded-2xl flex flex-col items-center gap-3">
               <Award className="w-12 h-12 text-primary" />
               <div className="text-center">
                 <p className="text-sm font-medium mb-3">Parabéns! Você concluiu esta unidade.</p>
-                <Button 
-                  onClick={issueCertificate} 
+                <Button
+                  onClick={issueCertificate}
                   disabled={issuing || unityDetails.wasCertificateAlreadyIssued}
                   className="w-full shadow-lg shadow-primary/20"
                 >
@@ -106,16 +106,18 @@ export default function UnityPage() {
           ) : (
             <h2 className="text-2xl font-bold mb-4">Cronograma de Aulas</h2>
           )}
-          {isLoading &&
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="rounded-xl border bg-card p-4 sm:p-6 flex items-center gap-4 sm:gap-6">
-                <Skeleton className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <Skeleton className="flex-shrink-0 w-10 h-10 rounded-full" />
-              </div>
+          {isLoading && !!!lessons &&
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="flex items-center p-4 sm:p-6 gap-4 sm:gap-6 group">
+                  <Skeleton className="shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="shrink-0 w-10 h-10 rounded-full" />
+                </CardContent>
+              </Card>
             ))}
           {lessons?.map((lesson, index) => (
             <Card
@@ -128,10 +130,10 @@ export default function UnityPage() {
                   href={`/unity/${unityNameParam}/lesson/${encodeURIComponent(lesson.title)}`}
                   className="flex items-center p-4 sm:p-6 gap-4 sm:gap-6 group"
                 >
-                  <div className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl font-bold transition-colors ${lesson.concluded ? 'bg-green-500/20 text-green-500' : 'bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}`}>
+                  <div className={`shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl font-bold transition-colors ${lesson.concluded ? 'bg-green-500/20 text-green-500' : 'bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}`}>
                     {lesson.concluded ? <CheckCircle2 className="w-8 h-8" /> : index + 1}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg sm:text-xl font-bold truncate group-hover:text-primary transition-colors">
                       {lesson.title}
@@ -145,8 +147,8 @@ export default function UnityPage() {
                       </span>
                     </div>
                   </div>
-                  
-                  <div className="flex-shrink-0">
+
+                  <div className="shrink-0">
                     <Button size="icon" variant="ghost" className="rounded-full group-hover:bg-primary/10 group-hover:text-primary">
                       <PlayCircle className="w-8 h-8" />
                     </Button>
