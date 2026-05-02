@@ -29,7 +29,7 @@ export interface Unity {
 
 export interface UnityDetail extends Unity {
   publicId: string;
-  wasAllQuestionsCorrectlyAnswered: boolean;
+  wasUnityCorrectlyAnswered: boolean;
   wasCertificateAlreadyIssued: boolean;
 }
 
