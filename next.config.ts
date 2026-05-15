@@ -1,11 +1,8 @@
 import type { NextConfig } from "next";
 
-module.exports = {
-  allowedDevOrigins: ['*'],
-}
-
 const nextConfig: NextConfig = {
   output: 'standalone',
+  allowedDevOrigins: ['*'],
   images: {
     remotePatterns: [
       {
